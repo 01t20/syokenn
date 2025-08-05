@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI搭載「よいこのあゆみ」作成支援インフォグラフィック</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;700;800&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" xintegrity="sha512-iecdLmaskl7CVK89wFqU7e7vW/jWl/C5P4I5A6A+C8p6vG1g5/jN6bK3a8yWl8R+eH7l6F+LpGj1yF6fKqJ0Hw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'M PLUS Rounded 1c', sans-serif;
+        }
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #118AB2;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .modal-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .modal-buttons button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .modal-buttons .confirm-yes {
+            background-color: #FF6B6B;
+            color: white;
+        }
+        .modal-buttons .confirm-no {
+            background-color: #f0f0f0;
+            color: #333;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body class="bg-gray-100" style="background-color: #f8f9fa;">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-5xl">
+
+        <header class="text-center mb-12">
+            <h1 class="text-4xl md:text-5xl font-extrabold mb-2" style="color: #073B4C;">AI搭載「よいこのあゆみ」<br>作成ガイド</h1>
+            <p class="text-lg" style="color: #118AB2;">キーワードから、AIが所見の見本を生成します</p>
+        </header>
+
+        <main class="space-y-12">
+            
+            <section id="child-name-input" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <label for="childName" class="block text-xl font-bold mb-2 text-center" style="color: #073B4C;">児童の名前を入力</label>
+                <input type="text" id="childName" placeholder="例：山田 太郎" class="w-full p-3 border border-gray-300 rounded-lg text-center text-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2; color: #073B4C;">
+            </section>
+
+            <section class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">1. 全体像</h2>
+                <p class="text-center text-sm text-gray-600">児童の全体像を表すキーワードや具体的な様子を入力してください。</p>
+                <div class="mb-4">
+                    <label for="generalTrait" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子①（性格・特徴）</label>
+                    <textarea id="generalTrait" placeholder="例：明るい, 友達思い, 優しい" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="generalStrength" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子②（得意なこと・強み）</label>
+                    <textarea id="generalStrength" placeholder="例：リーダーシップを発揮し、みんなをまとめるのが得意。運動神経が良い。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div>
+                    <label for="generalBehavior" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子③（日々の様子・行動）</label>
+                    <textarea id="generalBehavior" placeholder="例：困っている子を助ける優しい心を持っている。いつも笑顔でクラスを明るくする。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+            </section>
+            <section class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">2. 学習面</h2>
+                <p class="text-center text-sm text-gray-600">教科、単元、様子のキーワードや具体的なエピソード</p>
+                <div class="mb-4">
+                    <label for="learningSubject" class="block text-md font-bold mb-1" style="color: #073B4C;">教科</label>
+                    <input type="text" id="learningSubject" placeholder="例：算数" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;">
+                </div>
+                <div class="mb-4">
+                    <label for="learningUnit" class="block text-md font-bold mb-1" style="color: #073B4C;">単元</label>
+                    <input type="text" id="learningUnit" placeholder="例：大きな数" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;">
+                </div>
+                <div>
+                    <label for="learningObservation" class="block text-md font-bold mb-1" style="color: #073B4C;">様子</label>
+                    <textarea id="learningObservation" placeholder="例：粘り強い, 友達に教える。計算問題でつまずいても諦めず、自分で解決策を探す努力が見られる。発表も積極的。" rows="4" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+            </section>
+            <section class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">3. 生活面</h2>
+                <p class="text-center text-sm text-gray-600">場面、具体的な行動、その背景にある様子のキーワードや具体的なエピソード</p>
+                <div class="mb-4">
+                    <label for="lifeScene" class="block text-md font-bold mb-1" style="color: #073B4C;">場面</label>
+                    <input type="text" id="lifeScene" placeholder="例：給食の時間" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;">
+                </div>
+                <div class="mb-4">
+                    <label for="lifeAction" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な行動</label>
+                    <textarea id="lifeAction" placeholder="例：配膳係としてテキパキ準備した。アレルギーのある子に声をかけた。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div>
+                    <label for="lifeObservation" class="block text-md font-bold mb-1" style="color: #073B4C;">その背景にある様子</label>
+                    <textarea id="lifeObservation" placeholder="例：責任感, 周りをよく見る。みんなが気持ちよく食事ができるよう配慮できる。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+            </section>
+            <section class="bg-white rounded-xl shadow-lg p-6 space-y-4">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">4. 行動面</h2>
+                <p class="text-center text-sm text-gray-600">具体的な行動のキーワードやその背景にある思いを入力してください。</p>
+                <div class="mb-4">
+                    <label for="behaviorObservation1" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子①</label>
+                    <textarea id="behaviorObservation1" placeholder="例：教室のゴミ拾い, 進んで窓開け" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div class="mb-4">
+                    <label for="behaviorObservation2" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子②</label>
+                    <textarea id="behaviorObservation2" placeholder="例：誰に言われるでもなく、気づいたことをすぐに行動に移せる" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div>
+                    <label for="behaviorObservation3" class="block text-md font-bold mb-1" style="color: #073B4C;">具体的な様子③</label>
+                    <textarea id="behaviorObservation3" placeholder="例：清掃活動にも率先して取り組み、みんなのためになることを考えている" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+            </section>
+
+            <section id="future" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">5. 締めくくりのメッセージを選択・編集</h2>
+                <div class="bg-gray-50 rounded-lg p-6 mt-4" style="background-color: #f0f4f7;">
+                    <h3 class="text-xl font-bold mb-4" style="color: #073B4C;">カスタムメッセージ管理</h3>
+                    <div class="mb-4">
+                        <label for="newMessageInput" class="block text-md font-bold mb-2" style="color: #073B4C;">新しいメッセージを追加</label>
+                        <textarea id="newMessageInput" placeholder="例：常に向上心を持ち、何事にも真摯に取り組む〇〇さんの姿は、周りの模範となっています。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                        <button id="addMessageButton" class="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400" style="background-color: #118AB2;">メッセージを追加</button>
+                    </div>
+                    <div>
+                        <label for="customMessageSelect" class="block text-md font-bold mb-2" style="color: #073B4C;">登録済みメッセージを選択</label>
+                        <select id="customMessageSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></select>
+                    </div>
+                </div>
+                <p class="mt-4 p-4 rounded-lg text-center font-bold" style="background-color: #e7f5ff; color: #118AB2;" id="futureMessageDisplay">〇〇さんの良さを伸ばし、様々なことに挑戦し続けてくれることを期待しています。</p>
+            </section>
+            
+            <section id="output-section" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center mb-4" style="color: #073B4C;">6. AIによる所見生成</h2>
+                <p class="text-center mb-6 text-gray-600">キーワードを基に、AIが所見の見本を生成します。生成後、自由に編集も可能です。</p>
+                
+                <div class="mb-6">
+                    <label for="desiredCharCount" class="block text-lg font-bold mb-2" style="color: #073B4C;">希望文字数 (目安)</label>
+                    <input type="number" id="desiredCharCount" placeholder="例：280" min="50" max="500" class="w-full p-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;">
+                    <p class="text-center text-sm text-gray-600 mt-1">50文字から500文字の間で指定してください。AIが目安として調整します。</p>
+                </div>
+
+                <div class="flex justify-center items-center gap-4 mb-6">
+                    <button id="generateOutputButton" class="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2" style="background-color: #118AB2;">
+                        <span id="generateButtonText">文章を生成</span>
+                        <div id="loadingIndicator" class="loader hidden"></div>
+                    </button>
+                </div>
+
+                <textarea id="finalOutputTextarea" rows="15" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-base leading-relaxed" style="border-color: #118AB2; background-color: #f8f9fa;" placeholder="ここにAIが生成した所見が表示されます。"></textarea>
+                <div class="text-right text-gray-600 text-sm mt-2">文字数: <span id="charCount">0</span></div>
+
+                <div class="flex justify-center gap-4 mt-4">
+                    <button id="copyOutputButton" class="px-6 py-3 bg-green-500 text-white font-bold rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400 flex items-center gap-2" style="background-color: #06D6A0;">
+                      <i class="fa-solid fa-copy"></i>
+                      <span>コピー</span>
+                    </button>
+                    <button id="saveShokenButton" class="px-6 py-3 bg-yellow-500 text-white font-bold rounded-lg hover:bg-yellow-600 focus:outline-none focus:ring-2 focus:ring-yellow-400 flex items-center gap-2" style="background-color: #FFD166;">
+                        <i class="fa-solid fa-floppy-disk"></i>
+                        <span>この所見をデータとして保存</span>
+                    </button>
+                </div>
+                <div id="statusMessage" class="mt-4 text-center font-bold"></div>
+            </section>
+
+            <!-- 保存済みの所見セクションの追加 -->
+            <section id="saved-shoken-section" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center" style="color: #073B4C;">7. 保存済みの所見を管理</h2>
+                <p class="text-center text-sm text-gray-600">保存した所見の選択、表示、削除ができます。</p>
+                <div class="mb-4 mt-4">
+                    <label for="savedShokenSelect" class="block text-md font-bold mb-2" style="color: #073B4C;">保存済みの所見を選択</label>
+                    <select id="savedShokenSelect" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></select>
+                </div>
+                <div class="mb-4">
+                    <label for="savedShokenDisplay" class="block text-md font-bold mb-2" style="color: #073B4C;">選択した所見</label>
+                    <textarea id="savedShokenDisplay" rows="10" class="w-full p-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-base leading-relaxed" style="border-color: #118AB2; background-color: #f8f9fa;" readonly></textarea>
+                </div>
+                <div class="flex justify-center">
+                    <button id="deleteShokenButton" class="px-6 py-3 bg-red-500 text-white font-bold rounded-lg hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-400 flex items-center gap-2" style="background-color: #FF6B6B;">
+                        <i class="fa-solid fa-trash-can"></i>
+                        <span>この所見を削除</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- 新機能: 表現のバリエーション提案 -->
+            <section id="expression-variation-section" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center mb-4" style="color: #073B4C;"> 表現のバリエーション提案</h2>
+                <p class="text-center mb-6 text-gray-600">所見の文章の一部を入力すると、AIが別の表現を提案します。</p>
+                
+                <div class="mb-4">
+                    <label for="sentenceToRephrase" class="block text-md font-bold mb-1" style="color: #073B4C;">表現を変えたい文章</label>
+                    <textarea id="sentenceToRephrase" placeholder="例：彼はよく頑張りました。" rows="3" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div class="flex justify-center items-center gap-4 mb-6">
+                    <button id="rephraseButton" class="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2" style="background-color: #118AB2;">
+                        <span id="rephraseButtonText"> 表現を提案</span>
+                        <div id="rephraseLoadingIndicator" class="loader hidden"></div>
+                    </button>
+                </div>
+                <div>
+                    <label for="rephrasedOutput" class="block text-md font-bold mb-1" style="color: #073B4C;">AIからの提案</label>
+                    <textarea id="rephrasedOutput" rows="6" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-base leading-relaxed" style="border-color: #118AB2; background-color: #f8f9fa;" readonly placeholder="ここにAIが提案する表現が表示されます。"></textarea>
+                </div>
+                <div id="rephraseStatusMessage" class="mt-4 text-center font-bold"></div>
+            </section>
+
+            <!-- 新機能: 課題点から成長目標提案 -->
+            <section id="growth-goal-section" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center mb-4" style="color: #073B4C;"> 課題点から成長目標提案</h2>
+                <p class="text-center mb-6 text-gray-600">児童の課題点や改善点を入力すると、AIが具体的な成長目標を提案します。</p>
+                
+                <div class="mb-4">
+                    <label for="challengeInput" class="block text-md font-bold mb-1" style="color: #073B4C;">児童の課題点・改善点</label>
+                    <textarea id="challengeInput" placeholder="例：計算ミスが多い。友達に自分の意見を伝えるのが苦手。" rows="4" class="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400" style="border-color: #118AB2;"></textarea>
+                </div>
+                <div class="flex justify-center items-center gap-4 mb-6">
+                    <button id="suggestGoalButton" class="px-6 py-3 bg-blue-500 text-white font-bold rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400 flex items-center gap-2" style="background-color: #118AB2;">
+                        <span id="suggestGoalButtonText"> 成長目標を提案</span>
+                        <div id="suggestGoalLoadingIndicator" class="loader hidden"></div>
+                    </button>
+                </div>
+                <div>
+                    <label for="growthGoalOutput" class="block text-md font-bold mb-1" style="color: #073B4C;">AIからの成長目標提案</label>
+                    <textarea id="growthGoalOutput" rows="8" class="w-full p-4 border border-gray-300 rounded-lg bg-gray-50 text-gray-800 text-base leading-relaxed" style="border-color: #118AB2; background-color: #f8f9fa;" readonly placeholder="ここにAIが提案する成長目標が表示されます。"></textarea>
+                </div>
+                <div id="suggestGoalStatusMessage" class="mt-4 text-center font-bold"></div>
+            </section>
+
+            <section id="share-section" class="bg-white rounded-xl shadow-lg p-6 md:p-8">
+                <h2 class="text-2xl font-bold text-center mb-4" style="color: #073B4C;">8. ドキュメントの共有</h2>
+                <p class="text-center mb-6 text-gray-600">このドキュメントのURLをコピーして、他の人と共有できます。</p>
+                <div class="flex justify-center">
+                    <button id="copyShareLinkButton" class="px-6 py-3 bg-purple-500 text-white font-bold rounded-lg hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-400 flex items-center gap-2" style="background-color: #7209B7;">
+                        <i class="fa-solid fa-link"></i>
+                        <span>共有リンクをコピー</span>
+                    </button>
+                </div>
+                <div id="shareStatusMessage" class="mt-4 text-center font-bold"></div>
+            </section>
+
+        </main>
+
+        <footer class="text-center mt-12 py-6 border-t">
+            <p class="text-gray-500 text-sm">Canvas Infographics &copy; 2025</p>
+        </footer>
+
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmationModal" class="modal">
+        <div class="modal-content">
+            <p>選択した所見を削除しますか？この操作は元に戻せません。</p>
+            <div class="modal-buttons">
+                <button id="confirmYes" class="confirm-yes">はい</button>
+                <button id="confirmNo" class="confirm-no">いいえ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = function() {
+            const childNameInput = document.getElementById('childName');
+            const futureMessageDisplay = document.getElementById('futureMessageDisplay');
+            const newMessageInput = document.getElementById('newMessageInput');
+            const addMessageButton = document.getElementById('addMessageButton');
+            const customMessageSelect = document.getElementById('customMessageSelect');
+
+            let customMessages = [];
+            const customMessageLocalStorageKey = 'customFutureMessages_v2';
+
+            const generateOutputButton = document.getElementById('generateOutputButton');
+            const generateButtonText = document.getElementById('generateButtonText');
+            const loadingIndicator = document.getElementById('loadingIndicator');
+            const finalOutputTextarea = document.getElementById('finalOutputTextarea');
+            const copyOutputButton = document.getElementById('copyOutputButton');
+            const saveShokenButton = document.getElementById('saveShokenButton');
+            const statusMessage = document.getElementById('statusMessage');
+            const charCountDisplay = document.getElementById('charCount');
+            const desiredCharCountInput = document.getElementById('desiredCharCount');
+
+            // savedShokenSelectはHTMLの本文に存在します。
+            const savedShokenSelect = document.getElementById('savedShokenSelect');
+            const savedShokenDisplay = document.getElementById('savedShokenDisplay');
+            const deleteShokenButton = document.getElementById('deleteShokenButton');
+            const shokenLocalStorageKey = 'savedShokens_v2';
+
+            // 学習面入力要素
+            const learningSubjectInput = document.getElementById('learningSubject');
+            const learningUnitInput = document.getElementById('learningUnit');
+            const learningObservationInput = document.getElementById('learningObservation');
+
+            // 全体像の新しい入力要素
+            const generalTraitInput = document.getElementById('generalTrait');
+            const generalStrengthInput = document.getElementById('generalStrength');
+            const generalBehaviorInput = document.getElementById('generalBehavior');
+
+            // 生活面の新しい入力要素
+            const lifeSceneInput = document.getElementById('lifeScene');
+            const lifeActionInput = document.getElementById('lifeAction');
+            const lifeObservationInput = document.getElementById('lifeObservation');
+
+            // 行動面の新しい入力要素
+            const behaviorObservation1Input = document.getElementById('behaviorObservation1');
+            const behaviorObservation2Input = document.getElementById('behaviorObservation2');
+            const behaviorObservation3Input = document.getElementById('behaviorObservation3');
+
+            // 新機能: 表現のバリエーション提案
+            const sentenceToRephraseInput = document.getElementById('sentenceToRephrase');
+            const rephraseButton = document.getElementById('rephraseButton');
+            const rephraseButtonText = document.getElementById('rephraseButtonText');
+            const rephraseLoadingIndicator = document.getElementById('rephraseLoadingIndicator');
+            const rephrasedOutput = document.getElementById('rephrasedOutput');
+            const rephraseStatusMessage = document.getElementById('rephraseStatusMessage');
+
+            // 新機能: 課題点から成長目標提案
+            const challengeInput = document.getElementById('challengeInput');
+            const suggestGoalButton = document.getElementById('suggestGoalButton');
+            const suggestGoalButtonText = document.getElementById('suggestGoalButtonText');
+            const suggestGoalLoadingIndicator = document.getElementById('suggestGoalLoadingIndicator');
+            const growthGoalOutput = document.getElementById('growthGoalOutput');
+            const suggestGoalStatusMessage = document.getElementById('suggestGoalStatusMessage');
+
+            // Custom Confirmation Modal elements
+            const confirmationModal = document.getElementById('confirmationModal');
+            const confirmYesButton = document.getElementById('confirmYes');
+            const confirmNoButton = document.getElementById('confirmNo');
+
+            // 新機能: 共有リンク
+            const copyShareLinkButton = document.getElementById('copyShareLinkButton');
+            const shareStatusMessage = document.getElementById('shareStatusMessage');
+            
+            // --- AI機能の実装（ここから） ---
+
+            // Gemini APIを呼び出す関数
+            async function callGeminiApi(prompt) {
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+                const apiKey = "AIzaSyD1g0G0yV5x2gAs9OpM11juzkVGZw6Ce1M"; // APIキーは空文字列のままにしておきます
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                let response;
+                let result;
+                let retries = 0;
+                const maxRetries = 5;
+                const baseDelay = 1000; // 1 second
+
+                while (retries < maxRetries) {
+                    try {
+                        response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.status === 429) {
+                            // Too many requests, implement exponential backoff
+                            const delay = baseDelay * Math.pow(2, retries);
+                            retries++;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+
+                        result = await response.json();
+                        if (result.candidates && result.candidates.length > 0 &&
+                            result.candidates[0].content && result.candidates[0].content.parts &&
+                            result.candidates[0].content.parts.length > 0) {
+                            return result.candidates[0].content.parts[0].text;
+                        } else {
+                            throw new Error('API response format is unexpected.');
+                        }
+                    } catch (error) {
+                        retries++;
+                        const delay = baseDelay * Math.pow(2, retries);
+                        await new Promise(resolve => setTimeout(resolve, delay));
+                        // console.error("API call failed, retrying...", error);
+                    }
+                }
+                throw new Error("Failed to call Gemini API after multiple retries.");
+            }
+
+            // AIによる所見生成関数
+            const generateShoken = async () => {
+                generateButtonText.textContent = '生成中...';
+                loadingIndicator.classList.remove('hidden');
+                generateOutputButton.disabled = true;
+
+                try {
+                    const childName = childNameInput.value.trim() || '（児童名）';
+                    const generalTrait = generalTraitInput.value.trim();
+                    const generalStrength = generalStrengthInput.value.trim();
+                    const generalBehavior = generalBehaviorInput.value.trim();
+                    const learningSubject = learningSubjectInput.value.trim();
+                    const learningUnit = learningUnitInput.value.trim();
+                    const learningObservation = learningObservationInput.value.trim();
+                    const lifeScene = lifeSceneInput.value.trim();
+                    const lifeAction = lifeActionInput.value.trim();
+                    const lifeObservation = lifeObservationInput.value.trim();
+                    const behaviorObservation1 = behaviorObservation1Input.value.trim();
+                    const behaviorObservation2 = behaviorObservation2Input.value.trim();
+                    const behaviorObservation3 = behaviorObservation3Input.value.trim();
+                    const closingMessage = futureMessageDisplay.textContent;
+                    const desiredCharCount = desiredCharCountInput.value.trim() || 280;
+
+                    const prompt = `あなたは優秀な学校の先生です。以下の情報をもとに、児童の「よいこのあゆみ」の所見を、約${desiredCharCount}文字で生成してください。
+児童名: ${childName}
+全体像:
+具体的な様子①（性格・特徴）: ${generalTrait}
+具体的な様子②（得意なこと・強み）: ${generalStrength}
+具体的な様子③（日々の様子・行動）: ${generalBehavior}
+学習面:
+教科: ${learningSubject}
+単元: ${learningUnit}
+様子: ${learningObservation}
+生活面:
+場面: ${lifeScene}
+具体的な行動: ${lifeAction}
+その背景にある様子: ${lifeObservation}
+行動面:
+具体的な様子①: ${behaviorObservation1}
+具体的な様子②: ${behaviorObservation2}
+具体的な様子③: ${behaviorObservation3}
+締めくくりのメッセージ: ${closingMessage}`;
+                    
+                    const text = await callGeminiApi(prompt);
+                    finalOutputTextarea.value = text;
+                    updateCharCount();
+                } catch (error) {
+                    console.error("所見の生成に失敗しました:", error);
+                    showStatusMessage(statusMessage, '所見の生成に失敗しました。もう一度お試しください。', '#FF6B6B');
+                } finally {
+                    generateButtonText.textContent = '文章を生成';
+                    loadingIndicator.classList.add('hidden');
+                    generateOutputButton.disabled = false;
+                }
+            };
+            
+            // AIによる表現のバリエーション提案関数
+            const rephraseSentence = async () => {
+                const sentence = sentenceToRephraseInput.value.trim();
+                if (!sentence) {
+                    showStatusMessage(rephraseStatusMessage, '表現を変えたい文章を入力してください。', '#FF6B6B');
+                    return;
+                }
+
+                rephraseButtonText.textContent = '提案中...';
+                rephraseLoadingIndicator.classList.remove('hidden');
+                rephraseButton.disabled = true;
+                rephrasedOutput.value = '';
+
+                try {
+                    const prompt = `以下の文章を、より丁寧で心温まる「よいこのあゆみ」の所見として、複数のバリエーションで提案してください。
+文章: ${sentence}`;
+                    
+                    const text = await callGeminiApi(prompt);
+                    rephrasedOutput.value = text;
+                } catch (error) {
+                    console.error("表現の提案に失敗しました:", error);
+                    showStatusMessage(rephraseStatusMessage, '表現の提案に失敗しました。もう一度お試しください。', '#FF6B6B');
+                } finally {
+                    rephraseButtonText.textContent = '表現を提案';
+                    rephraseLoadingIndicator.classList.add('hidden');
+                    rephraseButton.disabled = false;
+                }
+            };
+
+            // AIによる成長目標提案関数
+            const suggestGrowthGoal = async () => {
+                const challenge = challengeInput.value.trim();
+                if (!challenge) {
+                    showStatusMessage(suggestGoalStatusMessage, '児童の課題点・改善点を入力してください。', '#FF6B6B');
+                    return;
+                }
+
+                suggestGoalButtonText.textContent = '提案中...';
+                suggestGoalLoadingIndicator.classList.remove('hidden');
+                suggestGoalButton.disabled = true;
+                growthGoalOutput.value = '';
+
+                try {
+                    const prompt = `以下の児童の課題点・改善点をもとに、具体的で前向きな成長目標を複数提案してください。
+課題点: ${challenge}`;
+                    
+                    const text = await callGeminiApi(prompt);
+                    growthGoalOutput.value = text;
+                } catch (error) {
+                    console.error("成長目標の提案に失敗しました:", error);
+                    showStatusMessage(suggestGoalStatusMessage, '成長目標の提案に失敗しました。もう一度お試しください。', '#FF6B6B');
+                } finally {
+                    suggestGoalButtonText.textContent = '成長目標を提案';
+                    suggestGoalLoadingIndicator.classList.add('hidden');
+                    suggestGoalButton.disabled = false;
+                }
+            };
+            
+            // --- AI機能の実装（ここまで） ---
+
+
+            const updateFutureMessageDisplay = () => {
+                const name = childNameInput.value.trim() || '〇〇さん';
+                const selectedIndex = customMessageSelect.value;
+                let message;
+                if (selectedIndex !== "" && customMessages[selectedIndex]) {
+                    message = customMessages[selectedIndex];
+                } else {
+                    message = "〇〇さんの良さを伸ばし、様々なことに挑戦し続けてくれることを期待しています。";
+                }
+                futureMessageDisplay.textContent = message.replace(/〇〇さん/g, name);
+            };
+            
+            childNameInput.addEventListener('input', updateFutureMessageDisplay);
+
+            const loadCustomMessages = () => {
+                const stored = localStorage.getItem(customMessageLocalStorageKey);
+                customMessages = stored ? JSON.parse(stored) : [];
+
+                if (customMessages.length === 0) {
+                    customMessages = [
+                        "今後も前向きな姿勢で成長していくことを期待しています。",
+                        "〇〇さんのさらなる成長を心から楽しみにしています。",
+                        "これからも〇〇さんのことを、先生はずっと応援しています。",
+                        "失敗を恐れずに、様々なことに挑戦し続けてください！",
+                        "この調子で、目標に向かって努力を続けていきましょう。",
+                        "今後も周りの人の気持ちに寄り添い、優しい行動を心がけましょう。",
+                        "これからも、その素晴らしい個性を大切に、大きく羽ばたいてくれることを期待しています。",
+                        "持ち前の探究心を、次の学年でもさらに発揮してくれることを楽しみにしています。",
+                        "〇〇さんなら、きっと素晴らしい未来を切り拓いてくれることでしょう。",
+                        "これからも、持ち前の明るさと優しさで、周りの人々を笑顔にしてください。"
+                    ];
+                    localStorage.setItem(customMessageLocalStorageKey, JSON.stringify(customMessages));
+                }
+
+                customMessageSelect.innerHTML = '<option value="">デフォルトのメッセージ</option>';
+                customMessages.forEach((msg, index) => {
+                    const option = document.createElement('option');
+                    option.value = index;
+                    option.textContent = msg.substring(0, 30) + (msg.length > 30 ? '...' : '');
+                    customMessageSelect.appendChild(option);
+                });
+                updateFutureMessageDisplay();
+            };
+
+            addMessageButton.addEventListener('click', () => {
+                const message = newMessageInput.value.trim();
+                if (message) {
+                    customMessages.push(message);
+                    localStorage.setItem(customMessageLocalStorageKey, JSON.stringify(customMessages));
+                    newMessageInput.value = '';
+                    loadCustomMessages();
+                    customMessageSelect.value = customMessages.length - 1;
+                    updateFutureMessageDisplay();
+                }
+            });
+
+            customMessageSelect.addEventListener('change', updateFutureMessageDisplay);
+            
+            const showStatusMessage = (element, message, color) => {
+                element.textContent = message;
+                element.style.color = color;
+                setTimeout(() => { element.textContent = ''; }, 3000);
+            };
+
+            generateOutputButton.addEventListener('click', generateShoken);
+
+            copyOutputButton.addEventListener('click', () => {
+                finalOutputTextarea.select();
+                document.execCommand('copy');
+                showStatusMessage(statusMessage, 'コピーしました！', '#06D6A0');
+            });
+            
+            saveShokenButton.addEventListener('click', () => {
+                const textToSave = finalOutputTextarea.value.trim();
+                if (textToSave) {
+                    let savedShokens = JSON.parse(localStorage.getItem(shokenLocalStorageKey)) || [];
+                    if (!savedShokens.includes(textToSave)) {
+                        savedShokens.push(textToSave);
+                        localStorage.setItem(shokenLocalStorageKey, JSON.stringify(savedShokens));
+                        showStatusMessage(statusMessage, 'この所見をデータとして保存しました。', '#FFD166');
+                        loadSavedShokens();
+                    } else {
+                        showStatusMessage(statusMessage, 'この所見は既に保存されています。', '#FF6B6B');
+                    }
+                }
+            });
+            
+            const loadSavedShokens = () => {
+                let savedShokens = JSON.parse(localStorage.getItem(shokenLocalStorageKey)) || [];
+                if (savedShokenSelect) {
+                    savedShokenSelect.innerHTML = '<option value="">保存済みの所見を選択</option>';
+                    savedShokens.forEach((shoken, index) => {
+                        const option = document.createElement('option');
+                        option.value = index;
+                        option.textContent = shoken.substring(0, 50) + (shoken.length > 50 ? '...' : '');
+                        savedShokenSelect.appendChild(option);
+                    });
+                }
+                if (savedShokenDisplay) {
+                    savedShokenDisplay.value = '';
+                }
+            };
+
+            if (savedShokenSelect) {
+                savedShokenSelect.addEventListener('change', (e) => {
+                    let savedShokens = JSON.parse(localStorage.getItem(shokenLocalStorageKey)) || [];
+                    const selectedIndex = e.target.value;
+                    if (selectedIndex !== "") {
+                        if (savedShokenDisplay) savedShokenDisplay.value = savedShokens[selectedIndex];
+                    } else {
+                        if (savedShokenDisplay) savedShokenDisplay.value = "";
+                    }
+                });
+            }
+
+            // Custom confirmation logic
+            let deleteConfirmedCallback = null;
+
+            if (deleteShokenButton) {
+                deleteShokenButton.addEventListener('click', () => {
+                    const selectedIndex = savedShokenSelect.value;
+                    if (selectedIndex !== "") {
+                        confirmationModal.style.display = 'flex';
+                        deleteConfirmedCallback = (confirmed) => {
+                            confirmationModal.style.display = 'none';
+                            if (confirmed) {
+                                let savedShokens = JSON.parse(localStorage.getItem(shokenLocalStorageKey)) || [];
+                                savedShokens.splice(selectedIndex, 1);
+                                localStorage.setItem(shokenLocalStorageKey, JSON.stringify(savedShokens));
+                                loadSavedShokens();
+                                showStatusMessage(statusMessage, '所見を削除しました。', '#FF6B6B');
+                            }
+                        };
+                    }
+                });
+            }
+
+            confirmYesButton.addEventListener('click', () => {
+                if (deleteConfirmedCallback) {
+                    deleteConfirmedCallback(true);
+                }
+            });
+
+            confirmNoButton.addEventListener('click', () => {
+                if (deleteConfirmedCallback) {
+                    deleteConfirmedCallback(false);
+                }
+            });
+
+            const updateCharCount = () => {
+                const text = finalOutputTextarea.value;
+                charCountDisplay.textContent = text.length;
+            };
+
+            finalOutputTextarea.addEventListener('input', updateCharCount);
+
+            rephraseButton.addEventListener('click', rephraseSentence);
+            suggestGoalButton.addEventListener('click', suggestGrowthGoal);
+
+            // --- 共有リンクをコピーする機能 ---
+            copyShareLinkButton.addEventListener('click', () => {
+                const url = window.location.href;
+                try {
+                    const tempInput = document.createElement('textarea');
+                    tempInput.value = url;
+                    document.body.appendChild(tempInput);
+                    tempInput.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(tempInput);
+                    showStatusMessage(shareStatusMessage, '共有リンクをクリップボードにコピーしました！', '#7209B7');
+                } catch (err) {
+                    console.error('Failed to copy text: ', err);
+                    showStatusMessage(shareStatusMessage, 'コピーに失敗しました。URLを直接コピーしてください。', '#FF6B6B');
+                }
+            });
+
+            // Initial loads
+            loadCustomMessages();
+            loadSavedShokens();
+            updateCharCount();
+        };
+    </script>
+</body>
+</html>
